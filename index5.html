@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Signatura - Institut Consell de Cent</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #006B5A 0%, #004d40 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .card-header h2 {
+            font-size: 1.1rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #006B5A;
+            box-shadow: 0 0 0 3px rgba(0,107,90,0.1);
+        }
+
+        .preview-container {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 25px;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .code-container {
+            position: relative;
+        }
+
+        .copy-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #3d3d3d;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            cursor: pointer;
+            color: #d4d4d4;
+            transition: all 0.3s;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .copy-icon:hover {
+            background: #006B5A;
+            color: white;
+        }
+
+        .copy-icon.copied {
+            background: #28a745;
+            color: white;
+        }
+
+        .copy-icon .hidden {
+            display: none;
+        }
+
+        .code-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            padding-right: 50px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: #006B5A;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #005546;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,107,90,0.3);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .copy-feedback {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .copy-feedback.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .instructions h3 {
+            color: #856404;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+
+        .instructions ol {
+            color: #856404;
+            padding-left: 20px;
+            font-size: 0.9rem;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            .two-columns {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .card-body {
+                padding: 15px;
+            }
+
+            .preview-container {
+                padding: 15px;
+                overflow-x: auto;
+            }
+
+            .code-output {
+                font-size: 0.7rem;
+            }
+        }
+
+        footer {
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            margin-top: 30px;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>📧 Generador de Signatura</h1>
+        <p>Institut Consell de Cent</p>
+    </header>
+
+    <!-- Formulari -->
+    <div class="card">
+        <div class="card-header">
+            <h2>✏️ Introdueix les teves dades</h2>
+        </div>
+        <div class="card-body">
+            <div class="two-columns">
+                <div class="form-group">
+                    <label for="nom">Nom complet</label>
+                    <input type="text" id="nom" placeholder="Ex: Maria Garcia" oninput="actualitzarSignatura()">
+                </div>
+                <div class="form-group">
+                    <label for="carrec">Càrrec</label>
+                    <input type="text" id="carrec" placeholder="Ex: Coordinador TAC, Tutor 3r ESO A..." oninput="actualitzarSignatura()">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="ambit">Àmbit</label>
+                <select id="ambit" onchange="actualitzarSignatura()">
+                    <option value="Àmbit Cientificotecnològic">Àmbit Cientificotecnològic</option>
+                    <option value="Àmbit Lingüístic i Social">Àmbit Lingüístic i Social</option>
+                    <option value="Àmbit de l'orientació">Àmbit de l'orientació</option>
+                    <option value="Àmbit Artístic">Àmbit Artístic</option>
+                    <option value="Àmbit d'Educació Física">Àmbit d'Educació Física</option>
+                    <option value="Equip Directiu">Equip Directiu</option>
+                    <option value="Secretaria">Secretaria</option>
+                    <option value="Consergeria">Consergeria</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Previsualització -->
+    <div class="card">
+        <div class="card-header">
+            <h2>👁️ Previsualització</h2>
+        </div>
+        <div class="card-body">
+            <div class="preview-container">
+                <div id="preview"></div>
+            </div>
+            <button class="btn btn-primary" onclick="copiarSignatura()" style="margin-top: 15px;">
+                📋 Copiar signatura per Gmail
+            </button>
+            <div class="instructions" style="margin-top: 15px;">
+                <h3>📌 Com afegir la signatura a Gmail:</h3>
+                <ol>
+                    <li>Clica el botó <strong>"Copiar signatura per Gmail"</strong></li>
+                    <li>Ves a Gmail → ⚙️ Configuració → "Mostra tots els paràmetres"</li>
+                    <li>Baixa fins a "Signatura" i crea'n una nova</li>
+                    <li>Enganxa amb <strong>Ctrl+V</strong> (o Cmd+V al Mac)</li>
+                    <li>Desa els canvis a baix de tot</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Codi HTML -->
+    <div class="card">
+        <div class="card-header">
+            <h2>🔧 Codi HTML (ús avançat)</h2>
+        </div>
+        <div class="card-body">
+            <div class="code-container">
+                <button class="copy-icon" onclick="copiarCodi()" title="Copiar codi">
+                    <svg id="icon-copy" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <svg id="icon-check" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
+                <div class="code-output" id="codi"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Institut Consell de Cent · <a href="https://agora.xtec.cat/iesconselldecent/" target="_blank">Web del centre</a></p>
+    </footer>
+</div>
+
+<div class="copy-feedback" id="feedback">✅ Codi copiat al portapapers!</div>
+
+<script>
+    function generarHTML(nom, carrec, ambit) {
+        return `<table cellpadding="0" cellspacing="0" border="0" width="300" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#333333;border-collapse:collapse;"><tr><td align="left" style="border-top:2px solid #C4A35A;padding:6px 0 3px 0;"><strong style="font-size:14px;color:#333333;">${nom || 'El teu nom'}</strong></td></tr><tr><td align="left" style="padding:0 0 2px 0;font-size:11px;color:#555555;">${carrec || 'El teu càrrec'}</td></tr><tr><td align="left" style="padding:0 0 2px 0;"><a href="https://agora.xtec.cat/iesconselldecent/" style="font-size:12px;color:#C4A35A;text-decoration:none;">${ambit}</a></td></tr><tr><td align="left" style="padding:0 0 4px 0;font-size:12px;color:#006B5A;font-weight:bold;">934424048</td></tr><tr><td align="left" style="padding:0 0 4px 0;"><img src="https://signatura-centre.github.io/signatura/logo.png" alt="Institut Consell de Cent" width="70" height="35" border="0" style="display:block;"></td></tr><tr><td align="left" style="padding:0;"><table cellpadding="0" cellspacing="0" border="0"><tr><td width="28" align="left"><a href="https://agora.xtec.cat/iesconselldecent/" target="_blank"><img src="https://signatura-centre.github.io/signatura/web.png" alt="Web" width="22" height="22" border="0" style="display:block;"></a></td><td width="28" align="left"><a href="https://t.me/iesconselldecent" target="_blank"><img src="https://signatura-centre.github.io/signatura/telegram.png" alt="Telegram" width="22" height="22" border="0" style="display:block;"></a></td><td width="28" align="left"><a href="https://www.instagram.com/iesconselldecent/" target="_blank"><img src="https://signatura-centre.github.io/signatura/instagram.png" alt="Instagram" width="22" height="22" border="0" style="display:block;"></a></td></tr></table></td></tr></table>`;
+    }
+
+    function actualitzarSignatura() {
+        const nom = document.getElementById('nom').value;
+        const carrec = document.getElementById('carrec').value;
+        const ambit = document.getElementById('ambit').value;
+
+        const html = generarHTML(nom, carrec, ambit);
+        
+        document.getElementById('preview').innerHTML = html;
+        document.getElementById('codi').textContent = html;
+    }
+
+    function copiarSignatura() {
+        const preview = document.getElementById('preview');
+        
+        // Seleccionar el contingut de la previsualització
+        const range = document.createRange();
+        range.selectNodeContents(preview);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // Copiar al portapapers
+        document.execCommand('copy');
+        selection.removeAllRanges();
+        
+        // Mostrar feedback
+        const feedback = document.getElementById('feedback');
+        feedback.textContent = '✅ Signatura copiada! Ara enganxa-la a Gmail';
+        feedback.classList.add('show');
+        setTimeout(() => {
+            feedback.classList.remove('show');
+            feedback.textContent = '✅ Codi copiat al portapapers!';
+        }, 2500);
+    }
+
+    function copiarCodi() {
+        const codi = document.getElementById('codi').textContent;
+        const copyIcon = document.getElementById('icon-copy');
+        const checkIcon = document.getElementById('icon-check');
+        const button = document.querySelector('.copy-icon');
+        
+        navigator.clipboard.writeText(codi).then(() => {
+            // Canviar icona
+            copyIcon.classList.add('hidden');
+            checkIcon.classList.remove('hidden');
+            button.classList.add('copied');
+            
+            // Mostrar feedback
+            const feedback = document.getElementById('feedback');
+            feedback.classList.add('show');
+            
+            setTimeout(() => {
+                feedback.classList.remove('show');
+                copyIcon.classList.remove('hidden');
+                checkIcon.classList.add('hidden');
+                button.classList.remove('copied');
+            }, 2000);
+        });
+    }
+
+    // Inicialitzar amb valors per defecte
+    actualitzarSignatura();
+</script>
+
+</body>
+</html>
